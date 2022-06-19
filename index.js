@@ -5,8 +5,6 @@ import mysql from "mysql";
 import dotenv from "dotenv"
 import dateFormat, { masks } from "dateformat";
 dotenv.config()
-// import db_config from "./config/db-config.json" assert {type:"json"}
-// import api_config from "./config/api-config.json" assert { type: "json" };
 
 const connection = mysql.createConnection({
     host : process.env.DB_HOST,
@@ -29,7 +27,7 @@ app.get('health',(req, res)=>{
     console.log('OK');
 })
 
-app.post('/weather',(req,res)=>{
+app.post('/answer.weather',(req,res)=>{
     var now = new Date();
     var date = dateFormat(now, "yyyymmdd");
     var time = dateFormat(now, "HH00");
