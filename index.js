@@ -2,7 +2,8 @@ import fetch from "node-fetch";
 import Nugu from "nugu-kit";
 import express from "express";
 import mysql from "mysql";
-import dotenv from "dotenv"
+import dotenv from "dotenv";
+import path from "path";
 import dateFormat, { masks } from "dateformat";
 dotenv.config()
 
@@ -12,15 +13,20 @@ const connection = mysql.createConnection({
     user : process.env.DB_USER,
     password : process.env.DB_PASSWORD,
     database : process.env.DB_DATABASE
-  });
+});
 
 connection.connect();
 
 const app = express();
 app.use(express.json());
+const __dirname = path.resolve();
 
 app.get('/',(req, res)=>{
-    console.log('index 접근');
+    res.sendFile('public/index.html' , { root : __dirname});
+})
+
+app.get('/video',(req, res)=>{
+    res.sendFile('public/videoPage.html' , { root : __dirname});
 })
 
 app.get('health',(req, res)=>{
