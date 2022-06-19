@@ -12,7 +12,8 @@ const connection = mysql.createConnection({
     port : process.env.DB_PORT,
     user : process.env.DB_USER,
     password : process.env.DB_PASSWORD,
-    database : process.env.DB_DATABASE
+    database : process.env.DB_DATABASE,
+    dateStrings: "dateFormat(now, 'yyyy-mm-dd HH:MM:ss')",
 });
 
 connection.connect();
@@ -37,7 +38,6 @@ app.post('/answer.weather',(req,res)=>{
     var now = new Date();
     var date = dateFormat(now, "yyyymmdd");
     var time = dateFormat(now, "HH00");
-    //환경변수
     fetch(`http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst?serviceKey=${process.env.API_KEY}&pageNo=1&numOfRows=1000&dataType=JSON&base_date=${date}&base_time=${time}&nx=55&ny=127`)
     .then((response) => response.json())
     .then((data) => {
@@ -114,6 +114,13 @@ app.post('/answer.humidity',function(req,res){
         return res.json(nugu.response);
     });
     connection.end();
+})
+
+app.get('/nodemcu/:humidity',function(req,res){
+    var humidity = req.params.humidity;
+    connection.query(`insert into humidity_tb (humidity_value, humidity_date) values (${humidity}, now())`, function(error, rows){
+        if(error) console.log(error);
+    });
 })
 
 app.listen(3000,()=>{
