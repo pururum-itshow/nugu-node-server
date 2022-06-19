@@ -3,6 +3,7 @@ import Nugu from "nugu-kit";
 import express from "express";
 import mysql from "mysql";
 import dotenv from "dotenv"
+import dateFormat, { masks } from "dateformat";
 dotenv.config()
 // import db_config from "./config/db-config.json" assert {type:"json"}
 // import api_config from "./config/api-config.json" assert { type: "json" };
@@ -29,8 +30,11 @@ app.get('health',(req, res)=>{
 })
 
 app.post('/weather',(req,res)=>{
+    var now = new Date();
+    var date = dateFormat(now, "yyyymmdd");
+    var time = dateFormat(now, "HH00");
     //환경변수
-    fetch(`http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst?serviceKey=${process.env.API_KEY}&pageNo=1&numOfRows=1000&dataType=JSON&base_date=20220618&base_time=0600&nx=55&ny=127`)
+    fetch(`http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst?serviceKey=${process.env.API_KEY}&pageNo=1&numOfRows=1000&dataType=JSON&base_date=${date}&base_time=${time}&nx=55&ny=127`)
     .then((response) => response.json())
     .then((data) => {
         var item = data.response.body.items.item;
