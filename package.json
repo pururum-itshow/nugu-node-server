@@ -2,21 +2,18 @@
   "name": "nugu",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
+  "main": "app.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "dateformat": "^5.0.3",
     "dotenv": "^16.0.1",
     "express": "^4.18.1",
+    "moment": "^2.29.3",
     "mysql": "^2.18.1",
-    "node-fetch": "^3.2.6",
     "nugu-kit": "^2.0.3",
-    "path": "^0.12.7",
     "request": "^2.88.2"
-  },
-  "type": "module"
+  }
 }

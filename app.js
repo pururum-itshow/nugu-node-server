@@ -1,26 +1,25 @@
-import fetch from "node-fetch";
-import Nugu from "nugu-kit";
-import express from "express";
-import mysql from "mysql";
-import dotenv from "dotenv";
-import path from "path";
-import dateFormat, { masks } from "dateformat";
+const express = require("express");
+const mysql     = require('mysql');
+const Nugu = require("nugu-kit");
+const request = require("request");
+const dotenv = require("dotenv");
+const moment = require("moment");
+const app 	= express();
+
 dotenv.config()
 
-const connection = mysql.createConnection({
-    host : process.env.DB_HOST,
-    port : process.env.DB_PORT,
-    user : process.env.DB_USER,
-    password : process.env.DB_PASSWORD,
-    database : process.env.DB_DATABASE,
-    dateStrings: "dateFormat(now, 'yyyy-mm-dd HH:MM:ss')",
-});
+var db = mysql.createConnection({
+    host     : process.env.DB_HOST,
+    user     : process.env.DB_USER,
+    password : process.env.DB_PASS,
+    database : process.env.DB_NAME
+  });
+  
+db.connect();
 
-connection.connect();
+app.set('port', process.env.PORT || 3000);
 
-const app = express();
 app.use(express.json());
-const __dirname = path.resolve();
 
 app.get('/',(req, res)=>{
     res.sendFile('public/index.html' , { root : __dirname});
@@ -35,12 +34,14 @@ app.get('health',(req, res)=>{
 })
 
 app.post('/answer.weather',(req,res)=>{
-    var now = new Date();
-    var date = dateFormat(now, "yyyymmdd");
-    var time = dateFormat(now, "HH00");
-    fetch(`http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst?serviceKey=${process.env.API_KEY}&pageNo=1&numOfRows=1000&dataType=JSON&base_date=${date}&base_time=${time}&nx=55&ny=127`)
-    .then((response) => response.json())
-    .then((data) => {
+    var now = moment();
+    now.subtract(1, 'hour')
+    var date = now.format("YYYYMMDD");
+    var time = now.format("HH00");
+
+    var apiurl = `http://apis.data.go.kr/1360000/VilageFcstInfoService_2.0/getUltraSrtNcst?serviceKey=${process.env.API_KEY}&pageNo=1&numOfRows=1000&dataType=JSON&base_date=${date}&base_time=${time}&nx=55&ny=127`;
+    request(apiurl, function(eror, response, bodyparse){
+        var data = JSON.parse(bodyparse);
         var item = data.response.body.items.item;
         var state, temperature;
 
@@ -93,7 +94,7 @@ app.post('/answer.weather',(req,res)=>{
 
 app.post('/answer.humidity',function(req,res){
     const nugu = new Nugu(req);
-    connection.query('SELECT * FROM humidity_tb order by humidity_date desc limit 1', function(error, rows){
+    db.query('SELECT * FROM humidity_tb order by humidity_date desc limit 1', function(error, rows){
         if(error) console.log(error);
 
         var now = new Date();
@@ -113,12 +114,11 @@ app.post('/answer.humidity',function(req,res){
         nugu.output = {'month': now.getMonth()+1 , 'day' : now.getDate(), 'humidity' : value, 'status' : status};
         return res.json(nugu.response);
     });
-    connection.end();
 })
 
 app.get('/nodemcu/:humidity',function(req,res){
     var humidity = req.params.humidity;
-    connection.query(`insert into humidity_tb (humidity_value, humidity_date) values (${humidity}, now())`, function(error, rows){
+    db.query(`insert into humidity_tb (humidity_value, humidity_date) values (${humidity}, now())`, function(error, rows){
         if(error) console.log(error);
     });
 })
